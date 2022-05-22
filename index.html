@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<!--чтобы было красиво - подключаем Bootstrap и всякие панельци, цвета -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+  <title>Чатик</title>
+  <style>
+    body {
+      background: #d7dfff }
+  </style>
+</head>
+<body>
+<!-- код шапки скопирован из примеров Bootstrap (но это только слова, они ниего не далеют, просто красиво) -->
+  <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm">
+		<h5 class="my-0 mr-md-auto">Чатик♡</h5>
+		<nav class="my-2 my-md-0 mr-md-3">
+			<a class="p-2 text-dark" href="#">За вас</a>
+			<a class="p-2 text-dark" href="#">За нас</a>
+			<a class="p-2 text-dark" href="#">и за Кавказ</a>
+
+		</nav>
+		<a class="btn btn-outline-primary" href="#">Регистрация</a>
+	</div>
+  <!-- сама страничка (под шапкой) -->
+  	<div class="container">
+  		<div class="py-5 text-center">
+  			<h2>Чатик</h2>
+  			<p class="lead">Укажите ваше имя и начинайте переписку</p>
+  		</div>
+  		<div class="row">
+  			<div class="col-6">
+  				<!-- Форма для получения сообщений и имени -->
+  				<h3>Форма сообщений</h3>
+  				<form id="messForm">
+  					<label for="name">Имя</label>
+  					<input type="text" name="name" id="name" placeholder="Введите имя" class="form-control">
+  					<br>
+  					<label for="message">Сообщение</label>
+  					<textarea name="message" id="message" class="form-control" placeholder="Введите сообщение"></textarea>
+  					<br>
+  					<input type="submit" value="Отправить" class="btn btn-danger">
+  				</form>
+  			</div>
+  			<div class="col-6">
+  				<h3>Сообщения</h3>
+  				<!-- Поле для всех сообщений будет здесь -->
+  				<div id="all_mess"></div>
+  			</div>
+  		</div>
+  	</div>
+    <!-- омайгад, как много этих див -->
+
+<!-- нужно подключить jQuery (можно код взять у гугла в библиотеке ) -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<!-- теперь нужно подключить сокет (можно код взять на их сайте ) -->
+<script src="/socket.io/socket.io.js"></script>
+
+<!-- переменная нас подключает к серверу-->
+<script>
+
+var min = 1;
+var max = 6;
+var random = Math.floor(Math.random() * (max-min)) + min; //целое рандомное число в нашем диапазоне
+
+//разные классы, для них разные цвета (у каждого пользователя свой)
+//все названия тоже с Bootstrap
+var alertClass;
+switch (random) {
+	case 1:
+	  alertClass = 'secondary';
+	  break;
+	case 2:
+		 alertClass = 'danger';
+		 break;
+	case 3:
+	 	 alertClass = 'success';
+	 	 break;
+	case 4:
+	 		alertClass = 'warning';
+	 		break;
+	case 5:
+			 alertClass = 'info';
+			 break;
+	case 6:
+			 alertClass = 'light';
+			 break;
+
+};
+
+$(function() {
+	var socket = io.connect(); //переменная нас подключает к серверу
+	var $form = $("#messForm"); //подключение к форме
+	var $name = $("#name"); //откуда берем имя пользователя
+	var $textarea = $("#message"); //откуда берем сообщения (поле ввода)
+	var $all_messages = $("#all_mess"); //подключение к форме с выводом сообщений всех
+
+//событие при нажании кнопки
+	$form.submit(function(event) {
+		event.preventDefault(); //функция, которая позволяет предотвратить
+		socket.emit('send mess', {mess: $textarea.val(), name: $name.val(), className: alertClass }); //функция вызывает событие внутри соединения
+    $textarea.val(''); //после отправки отчищаем поляну
+	});
+
+	socket.on('add mess',function(data){
+   $all_messages.append("<div class = 'alert alert-" + data.className+ "'><b>"
+	 + data.name + "</b>: " + data.mess + "</div>");  //функция которорая  позволяет встроить один блок в другой(новое сообщения во все сообщения) еще и по цветам класса своего
+
+	});
+
+});
+</script>
+
+</body>
+</html>
